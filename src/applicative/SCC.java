@@ -118,59 +118,6 @@ public class SCC implements ISCC {
     public static void main(String[] args) throws InterruptedException {
         SCC scc = new SCC();
 
-
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        scc.requete(5);
-                        scc.requete(15);
-                    }
-                },
-                5000
-        );
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        scc.requete(4);
-                        scc.requete(0);
-                        scc.requete(10);
-                    }
-                },
-                6000
-        );
-
-
-
-        /*scc.requete(5);
-
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        scc.declencherArretUrgence();
-                    }
-                },
-                5000
-        );
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        scc.stopperArretUrgence();
-                        scc.requete(2);
-                        scc.requete(10);
-                        scc.requete(9);
-                    }
-                },
-                8000
-        );*/
-
         scc.lancer();
     }
 
