@@ -12,27 +12,14 @@ import java.util.Vector;
 public class SCC implements ISCC, IMoteurListener {
 
     private Moteur moteur;
-    private Thread t_moteur;
     private Vector<Double> file;
+    private boolean etaitEnArretUrgence = false;
 
-     public SCC() {
+    public SCC(Moteur moteur) {
+        this.moteur = moteur;
         System.out.println("[SCC] initialisation...");
-        moteur = new Moteur(0,0.1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20);
-
         moteur.addListener(this);
-
-        t_moteur = new Thread(moteur);
         file = new Vector<Double>();
-    }
-
-    public void lancer()  {
-         try {
-             t_moteur.start();
-             t_moteur.join();
-         } catch (InterruptedException e) {
-             System.err.println("[SCC] erreur fatale : le lancement a échoué.");
-             System.exit(1);
-         }
     }
 
     public void requete(double niveau) {
@@ -52,7 +39,13 @@ public class SCC implements ISCC, IMoteurListener {
 
 
         System.out.println("[SCC] requête pour le niveau " + niveau);
-         file.add(niveau);
+        file.add(niveau);
+
+        // reprendre après un arrêt d'urgence
+        if (etaitEnArretUrgence && moteur.getStatut() == EStatusMoteur.ARRET) {
+            niveauAtteint(moteur.getNiveauActuel());
+            etaitEnArretUrgence = false;
+        }
     }
 
     public void niveauAtteint(double niveauActuel) {
@@ -79,8 +72,6 @@ public class SCC implements ISCC, IMoteurListener {
             } else if (niveauActuel > niveauChoisi){
                 moteur.descendre();
             }
-
-            return;
         }
 
         // --- Moteur déjà en marche, verifier si on doit s'arrêter au prochain niveau
@@ -122,6 +113,7 @@ public class SCC implements ISCC, IMoteurListener {
          // détruire les autres reqûetes
          file.clear();
          moteur.arretUrgence(ECauseArretUrgence.PASSAGER);
+         etaitEnArretUrgence = true;
     }
 
     public void stopperArretUrgence() {
@@ -130,6 +122,7 @@ public class SCC implements ISCC, IMoteurListener {
     }
 
     public static void main(String[] args) throws InterruptedException {
+         /*
         SCC scc = new SCC();
 
         scc.requete(5);
@@ -147,5 +140,6 @@ public class SCC implements ISCC, IMoteurListener {
         );
 
         scc.lancer();
+        */
     }
 }

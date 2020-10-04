@@ -25,7 +25,7 @@ public class MoteurTests {
         assertEquals("HAUT", moteur.getDirection().name(), "le moteur doit avoir pour direction 'HAUT'.");
         assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit avoir pour statut 'MARCHE'.");
 
-        moteur.etape();
+        moteur.etape(false);
 
         assertEquals("HAUT", moteur.getDirection().name(), "le moteur doit toujours avoir pour direction 'HAUT'.");
         assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit toujours avoir pour statut 'MARCHE'.");
@@ -44,7 +44,7 @@ public class MoteurTests {
         assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit avoir pour statut 'MARCHE'.");
 
 
-        moteur.etape();
+        moteur.etape(false);
 
         assertEquals("BAS", moteur.getDirection().name(), "le moteur doit toujours avoir pour direction 'BAS'.");
         assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit toujours avoir pour statut 'MARCHE'.");
@@ -59,27 +59,26 @@ public class MoteurTests {
         Moteur moteur = TestsUtils.moteurType(0);
 
         moteur.monter();
-        moteur.etape();
+        moteur.etape(false);
 
         double niveau = moteur.getNiveauActuel();
         moteur.arretUrgence(ECauseArretUrgence.PASSAGER);
         assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit être en arrêt d'urgence.");
 
-        moteur.etape();
+        moteur.etape(false);
         assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit toujours être en arrêt d'urgence.");
         assertEquals(niveau, moteur.getNiveauActuel(), "la cabine ne doit pas s'être deplacée.");
     }
 
     @Test
     void arretProchainNiveau() throws InterruptedException {
-
         Moteur moteur = TestsUtils.moteurType(0);
 
         moteur.monter();
         moteur.arretProchainNiveau();
 
         for (int i = 0 ; i<=10; i++) {
-            moteur.etape();
+            moteur.etape(false);
         }
 
         assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt.");

@@ -112,7 +112,7 @@ public class Moteur implements IMoteur, Runnable {
     }
 
     // public pour tests
-    public void etape() throws InterruptedException {
+    public void etape(boolean attenteMonteeDescente) throws InterruptedException {
         double position = cabine.getPosition();
 
         for (double niveau : niveaux) {
@@ -122,17 +122,18 @@ public class Moteur implements IMoteur, Runnable {
 
                 // arrêt prochain niveau
                 if (arretProchainNiveau && narretProchainNiveau != position) {
-                    System.out.println("[MOTEUR] arrêt de " + DUREE_MIN_ARRET_MS + " ms minimum.");
                     this.arret();
                     arretProchainNiveau = false;
                     narretProchainNiveau = -1;
-                    Thread.sleep(DUREE_MIN_ARRET_MS);
+                    if (attenteMonteeDescente) {
+                        System.out.println("[MOTEUR] arrêt de " + DUREE_MIN_ARRET_MS + " ms minimum.");
+                        Thread.sleep(DUREE_MIN_ARRET_MS);
+                    }
                 }
 
-
-                // transmettre l'information aux SCC en écoute
-                for (IMoteurListener listener: listeners) {
-                    listener.niveauAtteint(niveau);
+                // transmettre l'information aux SCC en écoute (les nouvelles écoutes en premier)
+                for (int i = 0; i < listeners.size(); i++) {
+                    listeners.get( listeners.size() - i - 1 ).niveauAtteint(niveau);
                 }
 
                 break;
@@ -176,7 +177,7 @@ public class Moteur implements IMoteur, Runnable {
     public void run() {
         try {
             for (; ; ) {
-                etape();
+                etape(true);
                 Thread.sleep(100);
             }
         } catch (Exception e) {
