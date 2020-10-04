@@ -4,6 +4,7 @@ import enums.ECauseArretUrgence;
 import enums.EDirectionMoteur;
 import enums.EStatusMoteur;
 import interfaces.IMoteur;
+import interfaces.IMoteurListener;
 import interfaces.ISCC;
 
 import java.util.TreeSet;
@@ -21,14 +22,14 @@ public class Moteur implements IMoteur, Runnable {
     private Cabine cabine;
     private boolean arretProchainNiveau;
     private double narretProchainNiveau;
-    private Vector<ISCC> listeners;
+    private Vector<IMoteurListener> listeners;
 
 
-    public Moteur(double pas, double ... niveaux) {
-        listeners = new Vector<ISCC>();
+    public Moteur(double positionInitiale, double pas, double ... niveaux) {
+        listeners = new Vector<IMoteurListener>();
         statut = EStatusMoteur.ARRET;
         direction = EDirectionMoteur.HAUT;
-        cabine = new Cabine(0);
+        cabine = new Cabine(positionInitiale);
         this.pas = pas;
         arretProchainNiveau = false;
         narretProchainNiveau = -1;
@@ -62,7 +63,7 @@ public class Moteur implements IMoteur, Runnable {
         changerStatut(EStatusMoteur.ARRET);
     }
 
-    public void addListener(ISCC listener) {
+    public void addListener(IMoteurListener listener) {
         listeners.add(listener);
     }
 
@@ -110,64 +111,72 @@ public class Moteur implements IMoteur, Runnable {
         return "[MOTEUR] statut : " + statut + " | " + cabine;
     }
 
+    // public pour tests
+    public void etape() throws InterruptedException {
+        double position = cabine.getPosition();
+
+        for (double niveau : niveaux) {
+
+            // on est sur un niveau
+            if (Math.abs(position - niveau) < pas*0.1) {
+
+                // arrêt prochain niveau
+                if (arretProchainNiveau && narretProchainNiveau != position) {
+                    System.out.println("[MOTEUR] arrêt de " + DUREE_MIN_ARRET_MS + " ms minimum.");
+                    this.arret();
+                    arretProchainNiveau = false;
+                    narretProchainNiveau = -1;
+                    Thread.sleep(DUREE_MIN_ARRET_MS);
+                }
+
+
+                // transmettre l'information aux SCC en écoute
+                for (IMoteurListener listener: listeners) {
+                    listener.niveauAtteint(niveau);
+                }
+
+                break;
+            }
+        }
+
+        if (statut == EStatusMoteur.MARCHE) {
+
+            switch (direction) {
+                case HAUT -> {
+                    double niveauMax = niveauMax();
+
+
+                    if (position + pas > niveauMax) {
+                        arretUrgence(ECauseArretUrgence.NIVEAU_MAX);
+                        break;
+                    }
+
+                    cabine.monter(pas);
+                    System.out.println(this);
+                }
+                case BAS -> {
+                    if (position - pas < 0) {
+                        arretUrgence(ECauseArretUrgence.NIVEAU_MIN);
+                        break;
+                    }
+
+                    cabine.descendre(pas);
+                    System.out.println(this);
+                }
+            }
+        }
+    }
+
+    public double getNiveauActuel() {
+        return cabine.getPosition();
+    }
+
     @Override
+    // etape toutes les 100 ms
     public void run() {
         try {
             for (; ; ) {
-
-                double position = cabine.getPosition();
-
-
-                for (double niveau : niveaux) {
-
-                    // on est sur un niveau
-                    if (Math.abs(position - niveau) < pas*0.1) {
-
-                        // arrêt prochain niveau
-                        if (arretProchainNiveau && narretProchainNiveau != position) {
-                            System.out.println("[MOTEUR] arrêt de " + DUREE_MIN_ARRET_MS + " ms minimum.");
-                            this.arret();
-                            arretProchainNiveau = false;
-                            narretProchainNiveau = -1;
-                            Thread.sleep(DUREE_MIN_ARRET_MS);
-                        }
-
-
-                        // transmettre l'information aux SCC en écoute
-                        for (ISCC listener: listeners) {
-                            listener.niveauAtteint(niveau);
-                        }
-
-                        break;
-                    }
-                }
-
-                if (statut == EStatusMoteur.MARCHE) {
-
-                    switch (direction) {
-                        case HAUT -> {
-                            double niveauMax = niveauMax();
-
-                            if (position + pas > niveauMax) {
-                                arretUrgence(ECauseArretUrgence.NIVEAU_MAX);
-                                break;
-                            }
-
-                            cabine.monter(pas);
-                            System.out.println(this);
-                        }
-                        case BAS -> {
-                            if (position - pas < 0) {
-                                arretUrgence(ECauseArretUrgence.NIVEAU_MIN);
-                                break;
-                            }
-
-                            cabine.descendre(pas);
-                            System.out.println(this);
-                        }
-                    }
-                }
-
+                etape();
                 Thread.sleep(100);
             }
         } catch (Exception e) {

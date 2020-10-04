@@ -7,5 +7,5 @@ public interface IMoteur {
     void descendre();
     void arretProchainNiveau();
     void arretUrgence(ECauseArretUrgence cause);
-    void addListener(ISCC listener);
+    void addListener(IMoteurListener listener);
 }
