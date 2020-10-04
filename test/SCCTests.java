@@ -62,7 +62,7 @@ public class SCCTests {
 
         assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt à la fin.");
 
-        if (Math.abs(1.0 - moteur.getNiveauActuel()) > 0.01) {
+        if (moteur.getNiveauActuel() != 1) {
             throw new AssertionError("l'ascenseur doit être au niveau 1 à la fin.");
         }
     }
@@ -111,7 +111,8 @@ public class SCCTests {
 
         assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être en arrêt normal.");
 
-        if (Math.abs(10.0 - moteur.getNiveauActuel()) > 0.01) {
+
+        if (moteur.getNiveauActuel() != 10) {
             throw new AssertionError("l'ascenseur doit être au niveau 10 à la fin.");
         }
     }

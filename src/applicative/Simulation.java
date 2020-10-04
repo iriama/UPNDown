@@ -13,7 +13,7 @@ public class Simulation implements Runnable {
     private static Thread threadSimulation;
 
     public static void main(String[] args) throws InterruptedException {
-        moteur = new Moteur(0, 0.1, 0, 1, 2, 3, 4, 5, 6 , 7, 8, 9, 10);
+        moteur = new Moteur(0, 0.05, 0, 1, 2, 3, 4, 5, 6 , 7, 8, 9, 10);
         scc = new SCC(moteur);
         GUI = new GUI(moteur.getNiveaux());
         threadSimulation = new Thread(new Simulation());
@@ -22,7 +22,6 @@ public class Simulation implements Runnable {
         threadSimulation.start();
 
         scc.requete(5);
-        scc.requete(1);
 
         threadSimulation.join();
     }

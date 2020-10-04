@@ -1,26 +1,29 @@
 package operative;
 import interfaces.ICabine;
 
+import java.math.BigDecimal;
+
 public class Cabine implements ICabine {
 
-    private double position;
+    private BigDecimal position;
 
-    public Cabine(double position) {
-        this.position = position;
+    public Cabine(double position)  {
+        this.position = new BigDecimal(position);
     }
 
     public void monter(double pas) {
-        position += pas;
+        position = position.add(BigDecimal.valueOf(pas));
     }
     public void descendre(double pas) {
-        position -= pas;
+        position = position.subtract(BigDecimal.valueOf(pas));
     }
+
     public double getPosition() {
-       return position;
+        return position.doubleValue();
     }
 
     @Override
     public String toString() {
-        return "[Cabine] position actuelle : " + position;
+        return "[Cabine] position actuelle : " + getPosition();
     }
 }

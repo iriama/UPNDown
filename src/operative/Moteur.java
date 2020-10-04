@@ -37,7 +37,6 @@ public class Moteur implements IMoteur {
         for (double niveau: niveaux) {
             this.niveaux.add(niveau);
         }
-
     }
 
     private void changerDirection(EDirectionMoteur direction) {
@@ -78,7 +77,7 @@ public class Moteur implements IMoteur {
 
     public void arretProchainNiveau() {
         arretProchainNiveau = true;
-        narretProchainNiveau = cabine.getPosition();
+        narretProchainNiveau = getNiveauActuel();
         System.out.println("[MOTEUR] arrêt au prochain niveau demandé.");
     }
 
@@ -112,12 +111,12 @@ public class Moteur implements IMoteur {
 
     // public pour tests
     public void etape(boolean attenteMonteeDescente) throws InterruptedException {
-        double position = cabine.getPosition();
+        double position = getNiveauActuel();
 
         for (double niveau : niveaux) {
 
             // on est sur un niveau
-            if (Math.abs(position - niveau) < pas*0.1) {
+            if (position == niveau) {
 
                 // arrêt prochain niveau
                 if (arretProchainNiveau && narretProchainNiveau != position) {

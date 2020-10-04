@@ -33,7 +33,7 @@ public class CabinePanel extends JPanel {
 
             positionYNiveaux.put(niveau, y);
 
-            if (Math.abs(gui.getPosition() - niveau) < 0.001) {
+            if (gui.getPosition() == niveau) {
                 g.setColor(Color.GREEN);
             } else {
                 g.setColor(Color.BLACK);
@@ -45,7 +45,11 @@ public class CabinePanel extends JPanel {
 
 
         // -- Cabine
-        g.setColor(Color.BLUE);
+        if (gui.getNiveaux().contains(gui.getPosition()))
+            g.setColor(Color.GREEN);
+        else
+            g.setColor(Color.BLUE);
+
         int recHeight = (int)Math.floor(niveauHeight / 3);
         int recWidth = 20;
         double floor = Math.floor(gui.getPosition()); // 1
