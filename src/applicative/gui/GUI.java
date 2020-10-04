@@ -37,7 +37,7 @@ public class GUI extends JFrame {
         setTitle("[EQUIPE 27] UPNDown");
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setLocationRelativeTo(null);
-        setResizable(false);
+        //setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(buildContentPanel());
     }

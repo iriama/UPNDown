@@ -25,7 +25,7 @@ public class CabinePanel extends JPanel {
         int nbNiveaux = gui.getNiveaux().size();
         Dimension d = gui.dimensionReelle();
         double niveauHeight = (d.height-1) / (nbNiveaux*1.0);
-        int lineWidth = d.width/3;
+        int lineWidth = d.width/4;
 
         for (int i=0; i<nbNiveaux; i++) {
             int y =  (int)Math.floor((d.height-1) - niveauHeight * i);
@@ -51,7 +51,7 @@ public class CabinePanel extends JPanel {
             g.setColor(Color.BLUE);
 
         int recHeight = (int)Math.floor(niveauHeight / 3);
-        int recWidth = 20;
+        int recWidth = recHeight;
         double floor = Math.floor(gui.getPosition()); // 1
         double progression = gui.getPosition() - floor; // 0.4
         int graphPosition = (int)Math.round(positionYNiveaux.get(floor) - niveauHeight * progression) - recHeight;
