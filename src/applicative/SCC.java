@@ -1,6 +1,7 @@
 package applicative;
 
 import enums.ECauseArretUrgence;
+import enums.EDirectionMoteur;
 import enums.EStatusMoteur;
 import interfaces.ISCC;
 import operative.Moteur;
@@ -13,10 +14,12 @@ public class SCC implements ISCC {
     private Thread t_moteur;
     private Vector<Double> file;
 
-
      public SCC() {
         System.out.println("[SCC] initialisation...");
-        moteur = new Moteur(this,0.1, 0, 1, 2, 3, 4, 5, 9, 10, 15, 20);
+        moteur = new Moteur(0.1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20);
+
+        moteur.addListener(this);
+
         t_moteur = new Thread(moteur);
         file = new Vector<Double>();
     }
@@ -51,32 +54,42 @@ public class SCC implements ISCC {
          file.add(niveau);
     }
 
-    public void actionMoteur() {
+    public void niveauAtteint(double niveauActuel) {
 
-        double niveauActuel = moteur.getNiveauActuel();
-
-         // -- Moteur à l'arrêt
+        // --- Moteur à l'arret, selectionner le prochain niveau à atteindre de sorte à minimiser le changement de direction
         if (moteur.getStatut() == EStatusMoteur.ARRET && file.size() > 0) {
 
-            double premierFile = file.get(0);
+            // choisir le premier de la file dans la même direction sinon le premier de la file
+            double niveauChoisi = file.get(0);
 
-            if (niveauActuel < premierFile) {
+            for (double niveau: file) {
+                if (moteur.getDirection() == EDirectionMoteur.HAUT && niveau > niveauActuel) {
+                    niveauChoisi = niveau;
+                    break;
+                }
+                else if (moteur.getDirection() == EDirectionMoteur.BAS && niveau < niveauActuel) {
+                    niveauChoisi = niveau;
+                    break;
+                }
+            }
+
+            if (niveauActuel < niveauChoisi) {
                 moteur.monter();
-            } else if (niveauActuel > premierFile){
+            } else if (niveauActuel > niveauChoisi){
                 moteur.descendre();
             }
 
             return;
         }
 
-        // --- Moteur déjà en marche
-        EStatusMoteur direction =  moteur.getStatut() == EStatusMoteur.HAUT || moteur.getStatut() == EStatusMoteur.BAS ? moteur.getStatut() : null;
+        // --- Moteur déjà en marche, verifier si on doit s'arrêter au prochain niveau
+        if (moteur.getStatut() != EStatusMoteur.MARCHE) return;
 
-        if (direction == null) return;
+        EDirectionMoteur direction =  moteur.getDirection();
 
         double niveauProchain = 0;
 
-        if (direction == EStatusMoteur.HAUT) {
+        if (direction == EDirectionMoteur.HAUT) {
 
             for (double niveau: moteur.getNiveaux()) {
                 if (niveau > niveauActuel) {
@@ -118,8 +131,20 @@ public class SCC implements ISCC {
     public static void main(String[] args) throws InterruptedException {
         SCC scc = new SCC();
 
+        scc.requete(5);
+        scc.requete(2);
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        scc.requete(1);
+                        scc.requete(8);
+                    }
+                },
+                10000
+        );
+
         scc.lancer();
     }
-
-
 }
