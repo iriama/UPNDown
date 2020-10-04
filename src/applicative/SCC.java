@@ -43,8 +43,8 @@ public class SCC implements ISCC, IMoteurListener {
 
         // reprendre après un arrêt d'urgence
         if (etaitEnArretUrgence && moteur.getStatut() == EStatusMoteur.ARRET) {
-            niveauAtteint(moteur.getNiveauActuel());
             etaitEnArretUrgence = false;
+            niveauAtteint(moteur.getNiveauActuel());
         }
     }
 
@@ -119,27 +119,5 @@ public class SCC implements ISCC, IMoteurListener {
     public void stopperArretUrgence() {
         System.out.println("[SCC] annulaiton de la demande d'arrêt d'urgence.");
         moteur.setStatut(EStatusMoteur.ARRET);
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-         /*
-        SCC scc = new SCC();
-
-        scc.requete(5);
-        scc.requete(2);
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        scc.requete(1);
-                        scc.requete(8);
-                    }
-                },
-                10000
-        );
-
-        scc.lancer();
-        */
     }
 }

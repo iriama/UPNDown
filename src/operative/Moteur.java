@@ -5,12 +5,11 @@ import enums.EDirectionMoteur;
 import enums.EStatusMoteur;
 import interfaces.IMoteur;
 import interfaces.IMoteurListener;
-import interfaces.ISCC;
 
 import java.util.TreeSet;
 import java.util.Vector;
 
-public class Moteur implements IMoteur, Runnable {
+public class Moteur implements IMoteur {
 
     private static final int DUREE_MIN_ARRET_MS  = 5000;
 
@@ -172,17 +171,4 @@ public class Moteur implements IMoteur, Runnable {
         return cabine.getPosition();
     }
 
-    @Override
-    // etape toutes les 100 ms
-    public void run() {
-        try {
-            for (; ; ) {
-                etape(true);
-                Thread.sleep(100);
-            }
-        } catch (Exception e) {
-            System.err.println(e);
-            System.exit(1);
-        }
-    }
 }

@@ -83,4 +83,24 @@ public class MoteurTests {
 
         assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt.");
     }
+
+    @Test
+    void arretUrgenceAutomatiqueHaut() throws InterruptedException {
+        Moteur moteur = TestsUtils.moteurType(10);
+
+        moteur.monter();
+        moteur.etape(false);
+
+        assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit être en arrêt urgence.");
+    }
+
+    @Test
+    void arretUrgenceAutomatiqueBas() throws InterruptedException {
+        Moteur moteur = TestsUtils.moteurType(0);
+
+        moteur.descendre();
+        moteur.etape(false);
+
+        assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit être en arrêt urgence.");
+    }
 }
