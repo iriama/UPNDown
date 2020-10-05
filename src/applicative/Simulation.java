@@ -22,6 +22,7 @@ public class Simulation implements Runnable {
         threadSimulation.start();
 
         scc.requete(5);
+        scc.requete(8);
 
         threadSimulation.join();
     }
