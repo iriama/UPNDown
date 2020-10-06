@@ -80,6 +80,7 @@ public class GUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JButton bouton = (JButton)e.getSource();
                 scc.requeteCabine(Integer.parseInt(bouton.getText()));
+                bouton.setBackground(Color.CYAN);
             }
         };
 
