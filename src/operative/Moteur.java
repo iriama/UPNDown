@@ -118,6 +118,8 @@ public class Moteur implements IMoteur {
             return;
         }
 
+        arretProchainNiveau = false;
+
         changerStatut(EStatut.ARRET_URGENCE);
         System.out.println("[MOTEUR] cause arrêt urgence : " + cause);
         arretProchainNiveau = false;

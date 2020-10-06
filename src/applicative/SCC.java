@@ -226,6 +226,7 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
         fileRequetes.clear();
         moteur.arretUrgence(ECauseArretUrgence.PASSAGER);
         arretUrgence = true;
+        arret = false;
     }
 
     /**
