@@ -6,8 +6,8 @@ import java.util.TreeSet;
 
 public class GUI extends JFrame {
 
-    private final int WINDOW_HEIGHT = 600;
-    private final int WINDOW_WIDTH = 400;
+    private static final int WINDOW_HEIGHT = 600;
+    private static final int WINDOW_WIDTH = 400;
 
     private TreeSet<Double> niveaux;
     private CabinePanel cabinePanel;

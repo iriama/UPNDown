@@ -1,6 +1,6 @@
 package enums;
 
-public enum EDirectionMoteur {
+public enum EDirection {
     HAUT,
     BAS
 }

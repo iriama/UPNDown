@@ -21,8 +21,8 @@ public class Simulation implements Runnable {
         SwingUtilities.invokeLater(() -> GUI.setVisible(true));
         threadSimulation.start();
 
-        scc.requete(5);
-        scc.requete(8);
+        scc.requeteCabine(5);
+        scc.requeteCabine(8);
 
         threadSimulation.join();
     }

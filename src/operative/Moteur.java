@@ -1,7 +1,7 @@
 package operative;
 
 import enums.ECauseArretUrgence;
-import enums.EDirectionMoteur;
+import enums.EDirection;
 import enums.EStatusMoteur;
 import interfaces.IMoteur;
 import interfaces.IMoteurListener;
@@ -14,7 +14,7 @@ public class Moteur implements IMoteur {
     private static final int DUREE_MIN_ARRET_MS  = 5000;
 
     private EStatusMoteur statut;
-    private EDirectionMoteur direction;
+    private EDirection direction;
 
     private TreeSet<Double> niveaux;
     private double pas;
@@ -27,7 +27,7 @@ public class Moteur implements IMoteur {
     public Moteur(double positionInitiale, double pas, double ... niveaux) {
         listeners = new Vector<IMoteurListener>();
         statut = EStatusMoteur.ARRET;
-        direction = EDirectionMoteur.HAUT;
+        direction = EDirection.HAUT;
         cabine = new Cabine(positionInitiale);
         this.pas = pas;
         arretProchainNiveau = false;
@@ -39,7 +39,7 @@ public class Moteur implements IMoteur {
         }
     }
 
-    private void changerDirection(EDirectionMoteur direction) {
+    private void changerDirection(EDirection direction) {
         if (this.direction == direction) return;
 
         System.out.println("[MOTEUR] changement direction : " + this.direction + " -> " + direction);
@@ -66,12 +66,12 @@ public class Moteur implements IMoteur {
     }
 
     public void monter() {
-        changerDirection(EDirectionMoteur.HAUT);
+        changerDirection(EDirection.HAUT);
         changerStatut(EStatusMoteur.MARCHE);
     }
 
     public void descendre() {
-        changerDirection(EDirectionMoteur.BAS);
+        changerDirection(EDirection.BAS);
         changerStatut(EStatusMoteur.MARCHE);
     }
 
@@ -92,7 +92,7 @@ public class Moteur implements IMoteur {
         return niveaux;
     }
 
-    public EDirectionMoteur getDirection() {
+    public EDirection getDirection() {
         return direction;
     }
 
