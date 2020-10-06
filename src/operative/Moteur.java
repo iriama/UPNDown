@@ -9,7 +9,7 @@ import interfaces.IMoteur;
 import java.util.Vector;
 
 /**
- * Simulation d'un moteur simple d'ascenseur
+ * Simulation d'un moteur d'ascenseur
  */
 public class Moteur implements IMoteur {
 

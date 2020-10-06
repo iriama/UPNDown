@@ -19,7 +19,7 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
     private EDirection direction;
     private int etage;
     private boolean arret;
-    private boolean arretUrgence;
+    public boolean arretUrgence;
     public SCC(IMoteur moteur, int nbEtages) {
         this.moteur = moteur;
         this.nbEtages = nbEtages;
@@ -31,6 +31,10 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
 
 
         moteur.ajouterEcouteurEtageAtteint(this);
+    }
+
+    public Vector<Requete> fileRequetes() {
+        return this.fileRequetes;
     }
 
     /**
@@ -49,16 +53,19 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
         boolean requeteMemeSens = false;
 
         // si on s'est arrêté, marquer les requetes comme satisfaites
+        Vector<Requete> satisfaites = new Vector<Requete>();
         if (arret) {
             for (int i = 0; i < fileRequetes.size(); i++) {
                 Requete requete = fileRequetes.get(i);
                 if (requete.etage == etage) {
                     // satisfaite
                     System.out.println("[SCC] " + requete + " satisfaite");
-                    fileRequetes.remove(requete);
-                } else if (!requeteMemeSens && ((requete.sens && requete.direction == direction) || (requete.etage < etage && direction == EDirection.BAS) || (requete.etage > etage && direction == EDirection.HAUT))) {
-                    requeteMemeSens = true;
+                    satisfaites.add(requete);
                 }
+            }
+
+            for (int i=0; i<satisfaites.size(); i++) {
+                fileRequetes.remove(satisfaites.get(i));
             }
 
             System.out.println("[SCC] requetes restantes : " + fileRequetes);
@@ -70,12 +77,26 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
             arret = false;
         }
 
+
+        boolean dansMonSens = false;
+        for (Requete requete: fileRequetes) {
+            // plus haut que nous
+            if ((requete.etage < etage && direction == EDirection.BAS) || (requete.etage > etage && direction == EDirection.HAUT)) {
+                // requete sans sens ou direction pareil que nous
+                if (!requete.sens || requete.direction == direction) {
+                    dansMonSens = true;
+                    break;
+                }
+            }
+        }
+
         // décider si on doit s'arrêter au niveau (étage) suivant
         int suivant = direction == EDirection.HAUT ? etage + 1 : etage - 1;
 
-        for (Requete requete : fileRequetes) {
+        for (int i = 0 ; i<fileRequetes.size(); i++) {
+            Requete requete = fileRequetes.get(i);
             // ignorer les requetes qui ne sont pas dans le même sens
-            if (requeteMemeSens && requete.sens && requete.direction != direction) continue;
+            if (dansMonSens && requete.sens && requete.direction != direction) continue;
 
             if (requete.etage == suivant) {
                 System.out.println("[SCC] arrêt prochain niveau (étage) demandé pour " + requete);
@@ -94,16 +115,38 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
 
         if (arretUrgence) return;
 
-        Requete requete = fileRequetes.get(0);
+        Requete choix = fileRequetes.get(0);
 
-        if (requete.etage < etage) {
+        for (Requete requete: fileRequetes) {
+            if (requete.equals(choix)) continue;
+
+            // en premier les requetes dans le meme sens
+            if (requete.etage > etage && direction == EDirection.HAUT)
+                choix = requete;
+            else if (requete.etage < etage && direction == EDirection.BAS)
+                choix = requete;
+        }
+
+
+        int suivant = etage;
+
+        if (choix.etage < etage) {
             System.out.println("[SCC] descendre()");
             moteur.descendre();
             direction = EDirection.BAS;
-        } else if (requete.etage > etage) {
+            suivant = etage-1;
+
+        } else if (choix.etage > etage) {
             System.out.println("[SCC] monter()");
             moteur.monter();
             direction = EDirection.HAUT;
+            suivant = etage+1;
+        }
+
+        if (choix.etage == suivant) {
+            System.out.println("[SCC] arrêt prochain niveau.");
+            moteur.arretProchainNiveau();
+            arret = true;
         }
     }
 
@@ -195,37 +238,4 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
         arretUrgence = false;
     }
 
-    /**
-     * Requête d'un passager
-     */
-    protected class Requete {
-        int etage;
-        boolean sens;
-        EDirection direction;
-
-        public Requete(int etage) {
-            this.etage = etage;
-            sens = false;
-        }
-
-        public Requete(int etage, EDirection direction) {
-            this.etage = etage;
-            sens = true;
-            this.direction = direction;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Requete)) return false;
-
-            Requete requete = (Requete) obj;
-
-            return sens ? requete.sens && etage == requete.etage && direction == requete.direction : !requete.sens && requete.etage == etage;
-        }
-
-        @Override
-        public String toString() {
-            return "requete@" + etage + (sens ? ":" + direction : "");
-        }
-    }
 }

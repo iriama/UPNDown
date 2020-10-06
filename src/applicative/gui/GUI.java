@@ -1,7 +1,16 @@
 package applicative.gui;
 
+import applicative.Requete;
+import applicative.SCC;
+import enums.EDirection;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Vector;
 
 public class GUI extends JFrame {
 
@@ -9,14 +18,79 @@ public class GUI extends JFrame {
     private static final int WINDOW_WIDTH = 400;
 
     private final int nbEtages;
-    private final CabinePanel cabinePanel;
+    private final PanelGauche panelGauche;
+    private final PanelDroite panelDroite;
     private double position;
 
-    public GUI(int nbEtages) {
+    private SCC scc;
+
+    public GUI(int nbEtages, SCC scc) {
         super();
+        this.scc = scc;
         this.nbEtages = nbEtages;
-        cabinePanel = new CabinePanel(this);
+        panelGauche = new PanelGauche(this);
+        panelDroite = new PanelDroite(this);
         build();
+
+        panelGauche.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseMoved(e);
+
+                Point pointeur = e.getPoint();
+
+                for (int etage = 0; etage < nbEtages; etage++) {
+                    BoutonEtage haut = panelGauche.boutonsHaut.get(etage);
+                    BoutonEtage bas = panelGauche.boutonsBas.get(etage);
+
+                    if (haut.forme.contains(pointeur)) {
+                        scc.requeteEtage(etage, EDirection.HAUT);
+                        haut.clic = true;
+                        break;
+                    }
+                    else if (bas.forme.contains(pointeur)) {
+                        scc.requeteEtage(etage, EDirection.BAS);
+                        bas.clic = true;
+                        break;
+                    }
+                }
+
+                panelGauche.repaint();
+            }
+        });
+
+        panelDroite.boutonArretUrgence.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scc.declencherArretUrgence();
+                panelGauche.repaint();
+            }
+        });
+
+        panelDroite.boutonAnnulationArretUrgence.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scc.stopperArretUrgence();
+                panelGauche.repaint();
+            }
+        });
+
+        var actionBouton = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JButton bouton = (JButton)e.getSource();
+                scc.requeteCabine(Integer.parseInt(bouton.getText()));
+            }
+        };
+
+        for (int i=0; i<nbEtages; i++) {
+            panelDroite.boutonsEtages.get(i).addActionListener(actionBouton);
+        }
+
+    }
+
+    public boolean arretUrgence() {
+        return scc.arretUrgence;
     }
 
     public double getPosition() {
@@ -25,7 +99,29 @@ public class GUI extends JFrame {
 
     public void updatePosition(double position) {
         this.position = position;
-        cabinePanel.repaint();
+
+        if (panelGauche.pret) {
+            Vector<Requete> file = scc.fileRequetes();
+            for (int etage = 0; etage < nbEtages; etage++) {
+                BoutonEtage haut = panelGauche.boutonsHaut.get(etage);
+                BoutonEtage bas = panelGauche.boutonsBas.get(etage);
+
+                haut.clic = file.contains(new Requete(etage, EDirection.HAUT));
+                bas.clic = file.contains(new Requete(etage, EDirection.BAS));
+            }
+        }
+
+        for (int i=0; i<nbEtages; i++) {
+            JButton bouton = panelDroite.boutonsEtages.get(i);
+
+            if (scc.fileRequetes().contains(new Requete(i))) {
+                bouton.setBackground(Color.CYAN);
+            } else {
+                bouton.setBackground(null);
+            }
+        }
+
+        panelGauche.repaint();
     }
 
     public int nbEtages() {
@@ -38,14 +134,15 @@ public class GUI extends JFrame {
         setLocationRelativeTo(null);
         //setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setContentPane(buildContentPanel());
+        setContentPane(intialisationPanels());
     }
 
-    private JPanel buildContentPanel() {
+    private JPanel intialisationPanels() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(1, 2));
 
-        panel.add(cabinePanel);
+        panel.add(panelGauche);
+        panel.add(panelDroite);
 
         return panel;
     }

@@ -17,14 +17,14 @@ public class Simulation implements Runnable {
 
         moteur = new Moteur(0.05, nbEtages);
         scc = new SCC(moteur, nbEtages);
-        GUI = new GUI(nbEtages);
+        GUI = new GUI(nbEtages, scc);
         threadSimulation = new Thread(new Simulation());
 
         SwingUtilities.invokeLater(() -> GUI.setVisible(true));
         threadSimulation.start();
 
-        scc.requeteCabine(5);
-        scc.requeteCabine(8);
+        //scc.requeteCabine(5);
+        //scc.requeteCabine(8);
 
         threadSimulation.join();
     }
