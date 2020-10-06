@@ -3,38 +3,46 @@ package operative;
 import enums.ECauseArretUrgence;
 import enums.EDirection;
 import enums.EStatut;
+import interfaces.IEcouteurEtageAtteint;
 import interfaces.IMoteur;
-import interfaces.IMoteurListener;
 
 import java.util.Vector;
 
+/**
+ * Simulation d'un moteur simple d'ascenseur
+ */
 public class Moteur implements IMoteur {
 
-    private static final int DUREE_MIN_ARRET_MS  = 5000;
-
+    private static final int DUREE_MIN_ARRET_MS = 5000;
+    private final int nbEtages;
+    private final double pas;
+    private final Cabine cabine;
+    private final Vector<IEcouteurEtageAtteint> listeners;
     private EStatut statut;
     private EDirection direction;
-
-    private int nbEtages;
-    private double pas;
-    private Cabine cabine;
     private boolean arretProchainNiveau;
     private double narretProchainNiveau;
-    private Vector<IMoteurListener> listeners;
+    private int dernierEtage;
 
 
     public Moteur(double pas, int nbEtages) {
-        listeners = new Vector<IMoteurListener>();
+        listeners = new Vector<IEcouteurEtageAtteint>();
         statut = EStatut.ARRET;
         direction = EDirection.HAUT;
         cabine = new Cabine(0);
         this.pas = pas;
         arretProchainNiveau = false;
         narretProchainNiveau = -1;
+        dernierEtage = -1;
 
         this.nbEtages = nbEtages;
     }
 
+    /**
+     * Change la direction du moteur
+     *
+     * @param direction nouvelle direction
+     */
     private void changerDirection(EDirection direction) {
         if (this.direction == direction) return;
 
@@ -42,6 +50,11 @@ public class Moteur implements IMoteur {
         this.direction = direction;
     }
 
+    /**
+     * Change l'état du moteur (marche/arrêt/arrêt urgence)
+     *
+     * @param statut nouvel état
+     */
     private void changerStatut(EStatut statut) {
         if (this.statut == statut) return;
 
@@ -49,30 +62,53 @@ public class Moteur implements IMoteur {
         this.statut = statut;
     }
 
+    /**
+     * Helper; change l'état du moteur à l'arrêt + log
+     */
     private void arret() {
         changerStatut(EStatut.ARRET);
     }
 
-    public void addListener(IMoteurListener listener) {
-        listeners.add(listener);
+
+    /**
+     * Ajoute un objet IEcouteurEtageAtteint à la liste d'écoute
+     *
+     * @param ecouteur
+     */
+    public void ajouterEcouteurEtageAtteint(IEcouteurEtageAtteint ecouteur) {
+        listeners.add(ecouteur);
     }
 
+    /**
+     * Actionne le moteur vers le haut
+     */
     public void monter() {
         changerDirection(EDirection.HAUT);
         changerStatut(EStatut.MARCHE);
     }
 
+    /**
+     * Actionne le moteur vers le bas
+     */
     public void descendre() {
         changerDirection(EDirection.BAS);
         changerStatut(EStatut.MARCHE);
     }
 
+    /**
+     * Programme un arrêt au prochain étage
+     */
     public void arretProchainNiveau() {
         arretProchainNiveau = true;
-        narretProchainNiveau = getNiveauActuel();
+        narretProchainNiveau = positionCabine();
         System.out.println("[MOTEUR] arrêt au prochain niveau demandé.");
     }
 
+    /**
+     * Lance immédiatement un arrêt d'urgence
+     *
+     * @param cause cause de l'arrêt d'urgence
+     */
     public void arretUrgence(ECauseArretUrgence cause) {
 
         if (statut == EStatut.ARRET_URGENCE && cause == ECauseArretUrgence.PASSAGER) {
@@ -89,32 +125,44 @@ public class Moteur implements IMoteur {
     }
 
 
-    public EDirection getDirection() {
+    /**
+     * Renvoi la direction du moteur (simulation)
+     *
+     * @return direction
+     */
+    public EDirection direction() {
         return direction;
     }
 
-    public EStatut getStatut() {
+    /**
+     * Renvoi le statut du moteur (simulation)
+     *
+     * @return statut
+     */
+    public EStatut statut() {
         return statut;
     }
 
-    public void setStatut(EStatut statut) {
-        changerStatut(statut);
-    }
 
     @Override
     public String toString() {
         return "[MOTEUR] statut : " + statut + " | " + cabine;
     }
 
-    int dernierEtage = -1;
-    // public pour tests
+
+    /**
+     * Une étape dans le temps du moteur (déplacement effectif/ou non de la cabine)
+     *
+     * @param attenteMonteeDescente spécifie si le moteur lance une attente active pendant les arrêts
+     * @throws InterruptedException
+     */
     public void etape(boolean attenteMonteeDescente) throws InterruptedException {
-        double position = getNiveauActuel();
+        double position = positionCabine();
 
 
-        for (int etage = 0; etage< nbEtages; etage++) {
+        for (int etage = 0; etage < nbEtages; etage++) {
 
-            // on est sur un niveau
+            // on est sur un étage
             if (position == etage) {
 
                 // arrêt prochain niveau
@@ -131,7 +179,7 @@ public class Moteur implements IMoteur {
                 if (dernierEtage != etage) {
                     // transmettre l'information aux SCC en écoute (les nouvelles écoutes en premier)
                     for (int i = 0; i < listeners.size(); i++) {
-                        listeners.get(listeners.size() - i - 1).niveauAtteint();
+                        listeners.get(listeners.size() - i - 1).etageAtteint();
                     }
 
                     dernierEtage = etage;
@@ -166,7 +214,12 @@ public class Moteur implements IMoteur {
         }
     }
 
-    public double getNiveauActuel() {
+    /**
+     * Renvoi la position de la cabine (simulation)
+     *
+     * @return position de la cabine
+     */
+    public double positionCabine() {
         return cabine.getPosition();
     }
 

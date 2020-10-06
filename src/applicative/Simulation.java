@@ -34,7 +34,7 @@ public class Simulation implements Runnable {
         try {
             for (; ; ) {
                 moteur.etape(true);
-                GUI.updatePosition(moteur.getNiveauActuel());
+                GUI.updatePosition(moteur.positionCabine());
 
                 Thread.sleep(100);
             }

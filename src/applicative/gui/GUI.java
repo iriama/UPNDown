@@ -2,15 +2,14 @@ package applicative.gui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.TreeSet;
 
 public class GUI extends JFrame {
 
     private static final int WINDOW_HEIGHT = 600;
     private static final int WINDOW_WIDTH = 400;
 
-    private int nbEtages;
-    private CabinePanel cabinePanel;
+    private final int nbEtages;
+    private final CabinePanel cabinePanel;
     private double position;
 
     public GUI(int nbEtages) {

@@ -7,7 +7,7 @@ public class ClavierPanel extends JPanel {
     public ClavierPanel() {
         super();
 
-        
+
     }
 
 }

@@ -2,95 +2,49 @@ package applicative;
 
 import enums.ECauseArretUrgence;
 import enums.EDirection;
-import enums.EStatut;
+import interfaces.IEcouteurEtageAtteint;
 import interfaces.IMoteur;
-import interfaces.IMoteurListener;
 import interfaces.ISCC;
-import operative.Moteur;
 
-import java.util.HashSet;
 import java.util.Vector;
 
+/**
+ * Système contrôle commande
+ */
+public class SCC implements ISCC, IEcouteurEtageAtteint {
 
-public class SCC implements ISCC, IMoteurListener {
-
-    protected class Requete {
-        int niveau;
-        boolean sens;
-        EDirection direction;
-
-        public Requete(int niveau) {
-            this.niveau = niveau;
-            sens = false;
-        }
-
-        public Requete(int niveau, EDirection direction) {
-            this.niveau = niveau;
-            sens = true;
-            this.direction = direction;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Requete)) return false;
-
-            Requete requete = (Requete)obj;
-
-            return sens ? requete.sens && niveau == requete.niveau && direction == requete.direction : !requete.sens && requete.niveau == niveau;
-        }
-
-        @Override
-        public String toString() {
-            return "requete@" + niveau + (sens ? ":" + direction : "");
-        }
-    }
-
-
-    public static void main(String[] args) throws InterruptedException {
-
-        Moteur moteur = new Moteur(0.1, 10);
-        SCC scc = new SCC(moteur, 10);
-
-        scc.requeteCabine(5);
-        scc.requeteCabine(3);
-        scc.requeteCabine(8);
-
-        for (int i = 0; i < 200; i++)
-            moteur.etape(false);
-
-    }
-
-    private IMoteur moteur;
-    private int niveauActuel = 0;
-    private int nbNiveaux;
-    private Vector<Requete> fileRequetes;
+    private final IMoteur moteur;
+    private final int nbEtages;
+    private final Vector<Requete> fileRequetes;
     private EDirection direction;
-    private int niveau;
+    private int etage;
     private boolean arret;
     private boolean arretUrgence;
-
-
-    public SCC(IMoteur moteur, int nbNiveaux) {
+    public SCC(IMoteur moteur, int nbEtages) {
         this.moteur = moteur;
-        this.nbNiveaux = nbNiveaux;
+        this.nbEtages = nbEtages;
         fileRequetes = new Vector<Requete>();
         direction = EDirection.HAUT;
-        niveau = -1;
+        etage = -1;
         arret = false;
         arretUrgence = false;
 
-        moteur.addListener(this);
+
+        moteur.ajouterEcouteurEtageAtteint(this);
     }
 
+    /**
+     * Fonction à executer à chaque passage de niveau
+     */
     @Override
-    public void niveauAtteint() {
+    public void etageAtteint() {
 
         if (direction == EDirection.HAUT)
-            niveau++;
+            etage++;
         else
-            niveau--;
+            etage--;
 
-        System.out.println("[SCC] niveau " + niveau);
+        System.out.println("[SCC] étage " + etage);
 
         boolean requeteMemeSens = false;
 
@@ -98,12 +52,11 @@ public class SCC implements ISCC, IMoteurListener {
         if (arret) {
             for (int i = 0; i < fileRequetes.size(); i++) {
                 Requete requete = fileRequetes.get(i);
-                if (requete.niveau == niveau) {
+                if (requete.etage == etage) {
                     // satisfaite
                     System.out.println("[SCC] " + requete + " satisfaite");
                     fileRequetes.remove(requete);
-                }
-                else if (!requeteMemeSens && ((requete.sens && requete.direction == direction) || (requete.niveau < niveau && direction == EDirection.BAS) || (requete.niveau > niveau && direction == EDirection.HAUT))) {
+                } else if (!requeteMemeSens && ((requete.sens && requete.direction == direction) || (requete.etage < etage && direction == EDirection.BAS) || (requete.etage > etage && direction == EDirection.HAUT))) {
                     requeteMemeSens = true;
                 }
             }
@@ -117,15 +70,15 @@ public class SCC implements ISCC, IMoteurListener {
             arret = false;
         }
 
-        // décider si on doit s'arrêter au niveau suivant
-        int suivant = direction == EDirection.HAUT ? niveau + 1 : niveau - 1;
+        // décider si on doit s'arrêter au niveau (étage) suivant
+        int suivant = direction == EDirection.HAUT ? etage + 1 : etage - 1;
 
         for (Requete requete : fileRequetes) {
             // ignorer les requetes qui ne sont pas dans le même sens
             if (requeteMemeSens && requete.sens && requete.direction != direction) continue;
 
-            if (requete.niveau == suivant) {
-                System.out.println("[SCC] arrêt prochain niveau demandé pour " + requete);
+            if (requete.etage == suivant) {
+                System.out.println("[SCC] arrêt prochain niveau (étage) demandé pour " + requete);
                 moteur.arretProchainNiveau();
                 arret = true;
                 break;
@@ -134,36 +87,43 @@ public class SCC implements ISCC, IMoteurListener {
 
     }
 
+    /**
+     * Actionne le moteur et le met en movement
+     */
     private void actionner() {
 
         if (arretUrgence) return;
 
         Requete requete = fileRequetes.get(0);
 
-        if (requete.niveau < niveau) {
+        if (requete.etage < etage) {
             System.out.println("[SCC] descendre()");
             moteur.descendre();
             direction = EDirection.BAS;
-        }
-        else if (requete.niveau > niveau) {
+        } else if (requete.etage > etage) {
             System.out.println("[SCC] monter()");
             moteur.monter();
             direction = EDirection.HAUT;
         }
     }
 
+    /**
+     * Requête d'un étage depuis la cabine
+     *
+     * @param etage étage demandé
+     */
     @Override
-    public void requeteCabine(int niveauDestination) {
+    public void requeteCabine(int etage) {
 
         if (arretUrgence) return;
 
-        if (niveauDestination < 0 || niveauDestination > nbNiveaux) {
-            System.out.println("[SCC] niveau invalide, ignoré.");
+        if (etage < 0 || etage > nbEtages) {
+            System.out.println("[SCC] étage invalide, ignoré.");
             return;
         }
 
 
-        Requete requete = new Requete(niveauDestination);
+        Requete requete = new Requete(etage);
 
         System.out.println("[SCC] requeteCabine " + requete);
 
@@ -178,17 +138,23 @@ public class SCC implements ISCC, IMoteurListener {
             actionner();
     }
 
+    /**
+     * Requete d'un étage depuis l'étage lui-même
+     *
+     * @param etageSource l'étage
+     * @param direction   direction du déplacement
+     */
     @Override
-    public void requeteEtage(int niveauSource, EDirection direction) {
+    public void requeteEtage(int etageSource, EDirection direction) {
 
         if (arretUrgence) return;
 
-        if (niveauSource < 0 || niveauSource > nbNiveaux) {
-            System.out.println("[SCC] niveau invalide, ignoré.");
+        if (etageSource < 0 || etageSource > nbEtages) {
+            System.out.println("[SCC] étage invalide, ignoré.");
             return;
         }
 
-        Requete requete = new Requete(niveauSource, direction);
+        Requete requete = new Requete(etageSource, direction);
         System.out.println("[SCC] requeteEtage " + requete);
 
         if (fileRequetes.contains(requete)) {
@@ -202,6 +168,9 @@ public class SCC implements ISCC, IMoteurListener {
             actionner();
     }
 
+    /**
+     * Déclenche un arrêt immédiat d'urgence
+     */
     @Override
     public void declencherArretUrgence() {
         if (arretUrgence) return;
@@ -213,6 +182,9 @@ public class SCC implements ISCC, IMoteurListener {
         arretUrgence = true;
     }
 
+    /**
+     * Annule un arrêt d'urgence en cours
+     */
     @Override
     public void stopperArretUrgence() {
         if (!arretUrgence) return;
@@ -221,5 +193,39 @@ public class SCC implements ISCC, IMoteurListener {
 
         moteur.arretUrgence(ECauseArretUrgence.PASSAGER);
         arretUrgence = false;
+    }
+
+    /**
+     * Requête d'un passager
+     */
+    protected class Requete {
+        int etage;
+        boolean sens;
+        EDirection direction;
+
+        public Requete(int etage) {
+            this.etage = etage;
+            sens = false;
+        }
+
+        public Requete(int etage, EDirection direction) {
+            this.etage = etage;
+            sens = true;
+            this.direction = direction;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Requete)) return false;
+
+            Requete requete = (Requete) obj;
+
+            return sens ? requete.sens && etage == requete.etage && direction == requete.direction : !requete.sens && requete.etage == etage;
+        }
+
+        @Override
+        public String toString() {
+            return "requete@" + etage + (sens ? ":" + direction : "");
+        }
     }
 }

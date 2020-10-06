@@ -2,7 +2,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import applicative.SCC;
 import enums.EDirection;
 import enums.EStatut;
-import interfaces.IMoteurListener;
+import interfaces.IEcouteurEtageAtteint;
 import operative.Moteur;
 import org.junit.jupiter.api.Test;
 
@@ -20,18 +20,18 @@ public class SCCTests {
         for (int i = 0; i<100; i++)
             moteur.etape(false);
 
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt.");
-        assertEquals("HAUT", moteur.getDirection().name(), "le moteur doit avoir pour direction 'HAUT'.");
-        assertEquals(5, moteur.getNiveauActuel(), "le moteur doit être au niveau 5.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être à l'arrêt.");
+        assertEquals("HAUT", moteur.direction().name(), "le moteur doit avoir pour direction 'HAUT'.");
+        assertEquals(5, moteur.positionCabine(), "le moteur doit être au niveau 5.");
 
         scc.requeteCabine(2);
 
         for (int i = 0; i<100; i++)
             moteur.etape(false);
 
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt.");
-        assertEquals("BAS", moteur.getDirection().name(), "le moteur doit avoir pour direction 'BAS'.");
-        assertEquals(2, moteur.getNiveauActuel(), "le moteur doit être au niveau 2.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être à l'arrêt.");
+        assertEquals("BAS", moteur.direction().name(), "le moteur doit avoir pour direction 'BAS'.");
+        assertEquals(2, moteur.positionCabine(), "le moteur doit être au niveau 2.");
     }
 
     @Test
@@ -44,18 +44,18 @@ public class SCCTests {
         for (int i = 0; i<100; i++)
             moteur.etape(false);
 
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt.");
-        assertEquals("HAUT", moteur.getDirection().name(), "le moteur doit avoir pour direction 'HAUT'.");
-        assertEquals(5, moteur.getNiveauActuel(), "le moteur doit être au niveau 5.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être à l'arrêt.");
+        assertEquals("HAUT", moteur.direction().name(), "le moteur doit avoir pour direction 'HAUT'.");
+        assertEquals(5, moteur.positionCabine(), "le moteur doit être au niveau 5.");
 
         scc.requeteEtage(2, EDirection.HAUT);
 
         for (int i = 0; i<100; i++)
             moteur.etape(false);
 
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt.");
-        assertEquals("BAS", moteur.getDirection().name(), "le moteur doit avoir pour direction 'BAS'.");
-        assertEquals(2, moteur.getNiveauActuel(), "le moteur doit être au niveau 2.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être à l'arrêt.");
+        assertEquals("BAS", moteur.direction().name(), "le moteur doit avoir pour direction 'BAS'.");
+        assertEquals(2, moteur.positionCabine(), "le moteur doit être au niveau 2.");
     }
 
     @Test
@@ -69,14 +69,14 @@ public class SCCTests {
         SCC scc = new SCC(moteur, TestsUtils.nbEtages);
         Vector<Integer> niveauxDesservies = new Vector<Integer>();
 
-        moteur.addListener(new IMoteurListener() {
+        moteur.ajouterEcouteurEtageAtteint(new IEcouteurEtageAtteint() {
             int sequence = 0;
 
             @Override
-            public void niveauAtteint() {
-                if (moteur.getStatut() != EStatut.ARRET) return;
+            public void etageAtteint() {
+                if (moteur.statut() != EStatut.ARRET) return;
 
-                int niveauActuel = (int)moteur.getNiveauActuel();
+                int niveauActuel = (int)moteur.positionCabine();
 
                 //System.out.println(niveauActuel);
 
@@ -123,9 +123,9 @@ public class SCCTests {
         else if (niveauxDesservies.get(4) != 7)
             throw  new AssertionError("l'ascenseur doit servir en dernier le niveau 7.");
 
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt à la fin.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être à l'arrêt à la fin.");
 
-        if (moteur.getNiveauActuel() != 7) {
+        if (moteur.positionCabine() != 7) {
             throw new AssertionError("l'ascenseur doit être au niveau 7 à la fin.");
         }
     }
@@ -145,12 +145,12 @@ public class SCCTests {
 
             if (i == 60) {
                 scc.declencherArretUrgence();
-                positionArretUrgence = moteur.getNiveauActuel();
+                positionArretUrgence = moteur.positionCabine();
             }
         }
 
-        assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit être en arrêt d'urgence.");
-        assertEquals(positionArretUrgence, moteur.getNiveauActuel(), "l'ascenseur ne doit pas avoir bougé depuis la position de l'arrêt d'urgence.");
+        assertEquals("ARRET_URGENCE", moteur.statut().name(), "le moteur doit être en arrêt d'urgence.");
+        assertEquals(positionArretUrgence, moteur.positionCabine(), "l'ascenseur ne doit pas avoir bougé depuis la position de l'arrêt d'urgence.");
     }
 
     @Test
@@ -173,10 +173,10 @@ public class SCCTests {
             }
         }
 
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être en arrêt normal.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être en arrêt normal.");
 
 
-        if (moteur.getNiveauActuel() != 10) {
+        if (moteur.positionCabine() != 10) {
             throw new AssertionError("l'ascenseur doit être au niveau 10 à la fin.");
         }
     }

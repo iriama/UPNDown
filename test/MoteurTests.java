@@ -11,9 +11,9 @@ public class MoteurTests {
     void initialisation() {
         Moteur moteur = TestsUtils.moteurType();
 
-        assertEquals(0, moteur.getNiveauActuel(), "le moteur doit être au niveau 0 par défaut.");
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt par défaut.");
-        assertEquals("HAUT", moteur.getDirection().name(), "le moteur doit avoir pour direction 'HAUT' par défaut.");
+        assertEquals(0, moteur.positionCabine(), "le moteur doit être au niveau 0 par défaut.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être à l'arrêt par défaut.");
+        assertEquals("HAUT", moteur.direction().name(), "le moteur doit avoir pour direction 'HAUT' par défaut.");
     }
 
     @Test
@@ -22,15 +22,15 @@ public class MoteurTests {
 
         moteur.monter();
 
-        assertEquals("HAUT", moteur.getDirection().name(), "le moteur doit avoir pour direction 'HAUT'.");
-        assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit avoir pour statut 'MARCHE'.");
+        assertEquals("HAUT", moteur.direction().name(), "le moteur doit avoir pour direction 'HAUT'.");
+        assertEquals("MARCHE", moteur.statut().name(), "le moteur doit avoir pour statut 'MARCHE'.");
 
         moteur.etape(false);
 
-        assertEquals("HAUT", moteur.getDirection().name(), "le moteur doit toujours avoir pour direction 'HAUT'.");
-        assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit toujours avoir pour statut 'MARCHE'.");
+        assertEquals("HAUT", moteur.direction().name(), "le moteur doit toujours avoir pour direction 'HAUT'.");
+        assertEquals("MARCHE", moteur.statut().name(), "le moteur doit toujours avoir pour statut 'MARCHE'.");
 
-        if (moteur.getNiveauActuel() <= 0)
+        if (moteur.positionCabine() <= 0)
             throw new AssertionError("la cabine doit s'être déplacée vers le haut.");
     }
 
@@ -41,21 +41,21 @@ public class MoteurTests {
         moteur.monter();
         moteur.etape(false);
 
-        double positionAvantDescente = moteur.getNiveauActuel();
+        double positionAvantDescente = moteur.positionCabine();
 
         moteur.descendre();
 
-        assertEquals("BAS", moteur.getDirection().name(), "le moteur doit avoir pour direction 'BAS'.");
-        assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit avoir pour statut 'MARCHE'.");
+        assertEquals("BAS", moteur.direction().name(), "le moteur doit avoir pour direction 'BAS'.");
+        assertEquals("MARCHE", moteur.statut().name(), "le moteur doit avoir pour statut 'MARCHE'.");
 
 
         moteur.etape(false);
 
-        assertEquals("BAS", moteur.getDirection().name(), "le moteur doit toujours avoir pour direction 'BAS'.");
-        assertEquals("MARCHE", moteur.getStatut().name(), "le moteur doit toujours avoir pour statut 'MARCHE'.");
+        assertEquals("BAS", moteur.direction().name(), "le moteur doit toujours avoir pour direction 'BAS'.");
+        assertEquals("MARCHE", moteur.statut().name(), "le moteur doit toujours avoir pour statut 'MARCHE'.");
 
 
-        if (moteur.getNiveauActuel() >= positionAvantDescente)
+        if (moteur.positionCabine() >= positionAvantDescente)
             throw new AssertionError("la cabine doit s'être déplacée vers le bas.");
     }
 
@@ -66,13 +66,13 @@ public class MoteurTests {
         moteur.monter();
         moteur.etape(false);
 
-        double niveau = moteur.getNiveauActuel();
+        double niveau = moteur.positionCabine();
         moteur.arretUrgence(ECauseArretUrgence.PASSAGER);
-        assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit être en arrêt d'urgence.");
+        assertEquals("ARRET_URGENCE", moteur.statut().name(), "le moteur doit être en arrêt d'urgence.");
 
         moteur.etape(false);
-        assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit toujours être en arrêt d'urgence.");
-        assertEquals(niveau, moteur.getNiveauActuel(), "la cabine ne doit pas s'être deplacée.");
+        assertEquals("ARRET_URGENCE", moteur.statut().name(), "le moteur doit toujours être en arrêt d'urgence.");
+        assertEquals(niveau, moteur.positionCabine(), "la cabine ne doit pas s'être deplacée.");
     }
 
     @Test
@@ -86,7 +86,7 @@ public class MoteurTests {
             moteur.etape(false);
         }
 
-        assertEquals("ARRET", moteur.getStatut().name(), "le moteur doit être à l'arrêt.");
+        assertEquals("ARRET", moteur.statut().name(), "le moteur doit être à l'arrêt.");
     }
 
     @Test
@@ -97,7 +97,7 @@ public class MoteurTests {
 
         moteur.etape(false);
 
-        assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit être en arrêt urgence.");
+        assertEquals("ARRET_URGENCE", moteur.statut().name(), "le moteur doit être en arrêt urgence.");
     }
 
     @Test
@@ -107,6 +107,6 @@ public class MoteurTests {
         moteur.descendre();
         moteur.etape(false);
 
-        assertEquals("ARRET_URGENCE", moteur.getStatut().name(), "le moteur doit être en arrêt urgence.");
+        assertEquals("ARRET_URGENCE", moteur.statut().name(), "le moteur doit être en arrêt urgence.");
     }
 }
