@@ -146,7 +146,7 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
             return;
         }
 
-        if (choix.etage == suivant) {
+        if (!arret && choix.etage == suivant) {
             System.out.println("[SCC] arrêt prochain niveau.");
             moteur.arretProchainNiveau();
             arret = true;
@@ -238,8 +238,11 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
 
         System.out.println("[SCC] arrêt urgence annulé.");
 
+        fileRequetes.clear();
         moteur.arretUrgence(ECauseArretUrgence.PASSAGER);
         arretUrgence = false;
+        arret = false;
+
     }
 
 }
