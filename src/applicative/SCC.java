@@ -141,6 +141,9 @@ public class SCC implements ISCC, IEcouteurEtageAtteint {
             moteur.monter();
             direction = EDirection.HAUT;
             suivant = etage+1;
+        } else { // on est déjà arrêté ici
+            fileRequetes.remove(choix);
+            return;
         }
 
         if (choix.etage == suivant) {
