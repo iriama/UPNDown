@@ -9,19 +9,15 @@ public class GUI extends JFrame {
     private static final int WINDOW_HEIGHT = 600;
     private static final int WINDOW_WIDTH = 400;
 
-    private TreeSet<Double> niveaux;
+    private int nbEtages;
     private CabinePanel cabinePanel;
     private double position;
 
-    public GUI(TreeSet<Double> niveaux) {
+    public GUI(int nbEtages) {
         super();
-        this.niveaux = niveaux;
+        this.nbEtages = nbEtages;
         cabinePanel = new CabinePanel(this);
         build();
-    }
-
-    public TreeSet<Double> getNiveaux() {
-        return niveaux;
     }
 
     public double getPosition() {
@@ -31,6 +27,10 @@ public class GUI extends JFrame {
     public void updatePosition(double position) {
         this.position = position;
         cabinePanel.repaint();
+    }
+
+    public int nbEtages() {
+        return nbEtages;
     }
 
     private void build() {

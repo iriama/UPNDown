@@ -1,6 +1,6 @@
 package enums;
 
-public enum EStatusMoteur {
+public enum EStatut {
     MARCHE,
     ARRET,
     ARRET_URGENCE

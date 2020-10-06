@@ -6,14 +6,14 @@ import java.util.HashMap;
 public class CabinePanel extends JPanel {
 
     private GUI gui;
-    private HashMap<Double, Integer> positionYNiveaux;
+    private HashMap<Integer, Integer> positionYEtages;
 
     public CabinePanel(GUI gui) {
         super();
 
         this.gui = gui;
 
-        positionYNiveaux = new HashMap<Double, Integer>();
+        positionYEtages = new HashMap<Integer, Integer>();
     }
 
     @Override
@@ -21,40 +21,40 @@ public class CabinePanel extends JPanel {
         super.paintComponent(g);
         g.setColor(Color.BLACK);
 
-        // -- Niveaux
-        int nbNiveaux = gui.getNiveaux().size();
+        // -- Etages
+        double position = gui.getPosition();
+        int nbEtages = gui.nbEtages();
         Dimension d = gui.dimensionReelle();
-        double niveauHeight = (d.height-1) / (nbNiveaux*1.0);
+        double etageHeight = (d.height-1) / (nbEtages*1.0);
         int lineWidth = d.width/4;
 
-        for (int i=0; i<nbNiveaux; i++) {
-            int y =  (int)Math.floor((d.height-1) - niveauHeight * i);
-            Double niveau = (Double) gui.getNiveaux().toArray()[i];
+        for (int etage=0; etage<nbEtages; etage++) {
+            int y =  (int)Math.floor((d.height-1) - etageHeight * etage);
 
-            positionYNiveaux.put(niveau, y);
+            positionYEtages.put(etage, y);
 
-            if (gui.getPosition() == niveau) {
+            if (position == (double)etage) {
                 g.setColor(Color.GREEN);
             } else {
                 g.setColor(Color.BLACK);
             }
 
             g.drawLine(0, y, lineWidth, y);
-            g.drawString(Integer.toString(niveau.intValue()), lineWidth + 3, y);
+            g.drawString(Integer.toString(etage), lineWidth + 3, y);
         }
 
 
         // -- Cabine
-        if (gui.getNiveaux().contains(gui.getPosition()))
+        if (position == Math.floor(position) && !Double.isInfinite(position))
             g.setColor(Color.GREEN);
         else
             g.setColor(Color.BLUE);
 
-        int recHeight = (int)Math.floor(niveauHeight / 3);
+        int recHeight = (int)Math.floor(etageHeight / 3);
         int recWidth = recHeight;
-        double floor = Math.floor(gui.getPosition()); // 1
-        double progression = gui.getPosition() - floor; // 0.4
-        int graphPosition = (int)Math.round(positionYNiveaux.get(floor) - niveauHeight * progression) - recHeight;
+        double floor = Math.floor(position); // 1
+        double progression = position - floor; // 0.4
+        int graphPosition = (int)Math.round(positionYEtages.get(floor) - etageHeight * progression) - recHeight;
 
         g.fillRect(lineWidth/2 - recWidth/2, graphPosition, recWidth, recHeight);
 

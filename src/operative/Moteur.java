@@ -2,21 +2,20 @@ package operative;
 
 import enums.ECauseArretUrgence;
 import enums.EDirection;
-import enums.EStatusMoteur;
+import enums.EStatut;
 import interfaces.IMoteur;
 import interfaces.IMoteurListener;
 
-import java.util.TreeSet;
 import java.util.Vector;
 
 public class Moteur implements IMoteur {
 
     private static final int DUREE_MIN_ARRET_MS  = 5000;
 
-    private EStatusMoteur statut;
+    private EStatut statut;
     private EDirection direction;
 
-    private TreeSet<Double> niveaux;
+    private int nbEtages;
     private double pas;
     private Cabine cabine;
     private boolean arretProchainNiveau;
@@ -24,19 +23,16 @@ public class Moteur implements IMoteur {
     private Vector<IMoteurListener> listeners;
 
 
-    public Moteur(double positionInitiale, double pas, double ... niveaux) {
+    public Moteur(double pas, int nbEtages) {
         listeners = new Vector<IMoteurListener>();
-        statut = EStatusMoteur.ARRET;
+        statut = EStatut.ARRET;
         direction = EDirection.HAUT;
-        cabine = new Cabine(positionInitiale);
+        cabine = new Cabine(0);
         this.pas = pas;
         arretProchainNiveau = false;
         narretProchainNiveau = -1;
-        this.niveaux = new TreeSet<Double>();
 
-        for (double niveau: niveaux) {
-            this.niveaux.add(niveau);
-        }
+        this.nbEtages = nbEtages;
     }
 
     private void changerDirection(EDirection direction) {
@@ -46,19 +42,15 @@ public class Moteur implements IMoteur {
         this.direction = direction;
     }
 
-    private void changerStatut(EStatusMoteur statut) {
+    private void changerStatut(EStatut statut) {
         if (this.statut == statut) return;
 
         System.out.println("[MOTEUR] changement statut : " + this.statut + " -> " + statut);
         this.statut = statut;
     }
 
-    private double niveauMax() {
-        return this.niveaux.last();
-    }
-
     private void arret() {
-        changerStatut(EStatusMoteur.ARRET);
+        changerStatut(EStatut.ARRET);
     }
 
     public void addListener(IMoteurListener listener) {
@@ -67,12 +59,12 @@ public class Moteur implements IMoteur {
 
     public void monter() {
         changerDirection(EDirection.HAUT);
-        changerStatut(EStatusMoteur.MARCHE);
+        changerStatut(EStatut.MARCHE);
     }
 
     public void descendre() {
         changerDirection(EDirection.BAS);
-        changerStatut(EStatusMoteur.MARCHE);
+        changerStatut(EStatut.MARCHE);
     }
 
     public void arretProchainNiveau() {
@@ -82,25 +74,30 @@ public class Moteur implements IMoteur {
     }
 
     public void arretUrgence(ECauseArretUrgence cause) {
-        changerStatut(EStatusMoteur.ARRET_URGENCE);
+
+        if (statut == EStatut.ARRET_URGENCE && cause == ECauseArretUrgence.PASSAGER) {
+            changerStatut(EStatut.ARRET);
+            System.out.println("[MOTEUR] cause annulation arrêt urgence : " + cause);
+
+            return;
+        }
+
+        changerStatut(EStatut.ARRET_URGENCE);
         System.out.println("[MOTEUR] cause arrêt urgence : " + cause);
         arretProchainNiveau = false;
         narretProchainNiveau = -1;
     }
 
-    public TreeSet<Double> getNiveaux() {
-        return niveaux;
-    }
 
     public EDirection getDirection() {
         return direction;
     }
 
-    public EStatusMoteur getStatut() {
+    public EStatut getStatut() {
         return statut;
     }
 
-    public void setStatut(EStatusMoteur statut) {
+    public void setStatut(EStatut statut) {
         changerStatut(statut);
     }
 
@@ -109,14 +106,16 @@ public class Moteur implements IMoteur {
         return "[MOTEUR] statut : " + statut + " | " + cabine;
     }
 
+    int dernierEtage = -1;
     // public pour tests
     public void etape(boolean attenteMonteeDescente) throws InterruptedException {
         double position = getNiveauActuel();
 
-        for (double niveau : niveaux) {
+
+        for (int etage = 0; etage< nbEtages; etage++) {
 
             // on est sur un niveau
-            if (position == niveau) {
+            if (position == etage) {
 
                 // arrêt prochain niveau
                 if (arretProchainNiveau && narretProchainNiveau != position) {
@@ -129,23 +128,24 @@ public class Moteur implements IMoteur {
                     }
                 }
 
-                // transmettre l'information aux SCC en écoute (les nouvelles écoutes en premier)
-                for (int i = 0; i < listeners.size(); i++) {
-                    listeners.get( listeners.size() - i - 1 ).niveauAtteint(niveau);
+                if (dernierEtage != etage) {
+                    // transmettre l'information aux SCC en écoute (les nouvelles écoutes en premier)
+                    for (int i = 0; i < listeners.size(); i++) {
+                        listeners.get(listeners.size() - i - 1).niveauAtteint();
+                    }
+
+                    dernierEtage = etage;
                 }
 
                 break;
             }
         }
 
-        if (statut == EStatusMoteur.MARCHE) {
+        if (statut == EStatut.MARCHE) {
 
             switch (direction) {
                 case HAUT -> {
-                    double niveauMax = niveauMax();
-
-
-                    if (position + pas > niveauMax) {
+                    if (position + pas > nbEtages - 1) {
                         arretUrgence(ECauseArretUrgence.NIVEAU_MAX);
                         break;
                     }

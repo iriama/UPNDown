@@ -1,5 +1,5 @@
 package interfaces;
 
 public interface IMoteurListener {
-    void niveauAtteint(double niveauActuel);
+    void niveauAtteint();
 }

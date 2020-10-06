@@ -13,9 +13,11 @@ public class Simulation implements Runnable {
     private static Thread threadSimulation;
 
     public static void main(String[] args) throws InterruptedException {
-        moteur = new Moteur(0, 0.05, 0, 1, 2, 3, 4, 5, 6 , 7, 8, 9, 10);
-        scc = new SCC(moteur);
-        GUI = new GUI(moteur.getNiveaux());
+        int nbEtages = 10;
+
+        moteur = new Moteur(0.05, nbEtages);
+        scc = new SCC(moteur, nbEtages);
+        GUI = new GUI(nbEtages);
         threadSimulation = new Thread(new Simulation());
 
         SwingUtilities.invokeLater(() -> GUI.setVisible(true));

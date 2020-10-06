@@ -1,7 +1,7 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import applicative.SCC;
 import enums.EDirection;
-import enums.EStatusMoteur;
+import enums.EStatut;
 import interfaces.IMoteurListener;
 import operative.Moteur;
 import org.junit.jupiter.api.Test;
@@ -12,8 +12,8 @@ public class SCCTests {
 
     @Test
     void requeteCabine() throws InterruptedException {
-        Moteur moteur = TestsUtils.moteurType(0.0);
-        SCC scc = new SCC(moteur);
+        Moteur moteur = TestsUtils.moteurType();
+        SCC scc = new SCC(moteur, TestsUtils.nbEtages);
 
         scc.requeteCabine(5);
 
@@ -36,8 +36,8 @@ public class SCCTests {
 
     @Test
     void requeteEtage() throws InterruptedException {
-        Moteur moteur = TestsUtils.moteurType(0.0);
-        SCC scc = new SCC(moteur);
+        Moteur moteur = TestsUtils.moteurType();
+        SCC scc = new SCC(moteur, TestsUtils.nbEtages);
 
         scc.requeteEtage(5, EDirection.HAUT);
 
@@ -65,17 +65,22 @@ public class SCCTests {
         // [0] 5 (haut) + 6 (bas) ; [5] 1 + 10 ; [6] 7
         // résultat attendu : ^ 5 ->  ^ 10 -> 6 v -> 1 v -> 7 ^
 
-        Moteur moteur = TestsUtils.moteurType(0.0);
-        SCC scc = new SCC(moteur);
-        Vector<Double> niveauxDesservies = new Vector<Double>();
+        Moteur moteur = TestsUtils.moteurType();
+        SCC scc = new SCC(moteur, TestsUtils.nbEtages);
+        Vector<Integer> niveauxDesservies = new Vector<Integer>();
 
         moteur.addListener(new IMoteurListener() {
             int sequence = 0;
 
             @Override
-            public void niveauAtteint(double niveauActuel) {
+            public void niveauAtteint() {
+                if (moteur.getStatut() != EStatut.ARRET) return;
 
-                if (moteur.getStatut() != EStatusMoteur.ARRET) return;
+                int niveauActuel = (int)moteur.getNiveauActuel();
+
+                //System.out.println(niveauActuel);
+
+                System.out.println("[TEST] niveau : " + niveauActuel);
 
                 if (niveauActuel == 5 && sequence == 0) {
                     scc.requeteCabine(1);
@@ -88,9 +93,7 @@ public class SCCTests {
                     sequence++;
                 }
 
-                if (niveauActuel > 0 && (niveauxDesservies.size() < 1 || niveauxDesservies.lastElement() != niveauActuel)) {
-                    niveauxDesservies.add(niveauActuel);
-                }
+                niveauxDesservies.add(niveauActuel);
 
             }
         });
@@ -130,8 +133,8 @@ public class SCCTests {
 
     @Test
     void declencherArretUrgence() throws InterruptedException {
-        Moteur moteur = TestsUtils.moteurType(0.0);
-        SCC scc = new SCC(moteur);
+        Moteur moteur = TestsUtils.moteurType();
+        SCC scc = new SCC(moteur, TestsUtils.nbEtages);
 
         scc.requeteCabine(10);
 
@@ -152,8 +155,8 @@ public class SCCTests {
 
     @Test
     void stopperArretUrgence() throws InterruptedException {
-        Moteur moteur = TestsUtils.moteurType(0.0);
-        SCC scc = new SCC(moteur);
+        Moteur moteur = TestsUtils.moteurType();
+        SCC scc = new SCC(moteur, TestsUtils.nbEtages);
 
         scc.requeteCabine(10);
 
