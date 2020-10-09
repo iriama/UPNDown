@@ -28,7 +28,7 @@ public interface IMoteur {
     /**
      * Ajoute un objet IEcouteurEtageAtteint à la liste d'écoute
      *
-     * @param ecouteur
+     * @param ecouteur objet en écoute
      */
     void ajouterEcouteurEtageAtteint(IEcouteurEtageAtteint ecouteur);
 }
