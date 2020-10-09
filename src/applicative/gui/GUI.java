@@ -75,7 +75,7 @@ public class GUI extends JFrame {
             }
         });
 
-        var actionBouton = new ActionListener() {
+        ActionListener actionBouton = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JButton bouton = (JButton)e.getSource();

@@ -194,7 +194,7 @@ public class Moteur implements IMoteur {
         if (statut == EStatut.MARCHE) {
 
             switch (direction) {
-                case HAUT -> {
+                case HAUT: {
                     if (position + pas > nbEtages - 1) {
                         arretUrgence(ECauseArretUrgence.NIVEAU_MAX);
                         break;
@@ -202,8 +202,9 @@ public class Moteur implements IMoteur {
 
                     cabine.monter(pas);
                     System.out.println(this);
+                    break;
                 }
-                case BAS -> {
+                case BAS: {
                     if (position - pas < 0) {
                         arretUrgence(ECauseArretUrgence.NIVEAU_MIN);
                         break;
@@ -211,6 +212,7 @@ public class Moteur implements IMoteur {
 
                     cabine.descendre(pas);
                     System.out.println(this);
+                    break;
                 }
             }
         }
